@@ -15,52 +15,49 @@ public class MultiServer {
     private DistantServerFolderManager manager;
     private final ConcurrentLinkedDeque<Server> servers = new ConcurrentLinkedDeque<>();
 
-
-    MultiServer(String folder, int port, InetAddress address){
+    MultiServer(String folder, int port, InetAddress address) {
         try {
-            serverSocket = new ServerSocket(port,-1,address);
+            serverSocket = new ServerSocket(port, -1, address);
             serverSocket.setReuseAddress(true);
             this.folder = folder;
-            this.manager = new DistantServerFolderManager(folder,new Server(address,port));
+            this.manager = new DistantServerFolderManager(folder, new Server(address, port));
             BufferedReader reader = new BufferedReader(
                     new FileReader("/home/marius/cours/l3s2/ApRéseau/projet/multi-severs/servers"));
             String line;
-            while ((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 String[] info = line.split(",");
-                if (InetAddress.getByName(info[0]).equals(address) &&
-                        info[1].equals(String.valueOf(port)))
-                servers.add(new Server(InetAddress.getByName(info[0]),Integer.parseInt(info[1])));
+                if (InetAddress.getByName(info[0]).equals(address) && info[1].equals(String.valueOf(port)))
+                    servers.add(new Server(InetAddress.getByName(info[0]), Integer.parseInt(info[1])));
                 initialization();
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("impossible d'ouvrir le serveur");
             System.exit(1);
         }
     }
 
     private void initialization() throws IOException {
-        for (String nameFile : manager.getListLocalFile()){
-            diffusion(null,nameFile,"SERVER_CREATE");
+        for (String nameFile : manager.getListLocalFile()) {
+            diffusion(null, nameFile, "SERVER_CREATE");
         }
     }
 
-    public void start(){
+    public void start() {
         try {
             while (true) {
                 new Thread(new Handler(serverSocket.accept())).start();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Arrêt anormal du serveur.");
         }
     }
 
-    class Handler implements Runnable{
+    class Handler implements Runnable {
 
         private final Socket socket;
         private final OutputStream out;
         private final InputStream in;
-
 
         Handler(Socket socket) throws IOException {
             this.socket = socket;
@@ -73,16 +70,14 @@ public class MultiServer {
             byte[] buffer = new byte[2048];
             try {
                 int length = in.read(buffer);
-                String[] msg = Translate.translateByteInString(buffer,length).split(" ");
+                String[] msg = Translate.translateByteInString(buffer, length).split(" ");
                 msg[0] = msg[0].toUpperCase(Locale.ROOT);
                 System.out.println(msg[0]);
-                if (msg.length == 1 && msg[0].equals("LIST")){
+                if (msg.length == 1 && msg[0].equals("LIST")) {
                     list(socket);
-                }
-                else if (msg.length == 2){
-                    modificationRequestFile(socket,msg);
-                }
-                else if (msg.length == 4){
+                } else if (msg.length == 2) {
+                    modificationRequestFile(socket, msg);
+                } else if (msg.length == 4) {
                     modificationRequestDistantFileSet(msg);
                 }
                 in.close();
@@ -96,35 +91,47 @@ public class MultiServer {
 
     private void modificationRequestFile(Socket socket, String[] msg) throws IOException {
         switch (msg[0]) {
-            case "GET" -> get(msg[1], socket);
-            case "CREATE" -> created(msg[1], socket);
-            case "WRITE" -> write(msg[1], socket);
-            case "DELETE" -> delete(msg[1], socket);
+        case "GET":
+            get(msg[1], socket);
+            break;
+        case "CREATE":
+            created(msg[1], socket);
+            break;
+        case "WRITE":
+            write(msg[1], socket);
+            break;
+        case "DELETE":
+            delete(msg[1], socket);
+            break;
         }
     }
 
-    private void modificationRequestDistantFileSet(String[] msg) throws IOException{
+    private void modificationRequestDistantFileSet(String[] msg) throws IOException {
         switch (msg[0]) {
-            case "SERVER_CREATE" -> serverCreate(msg);
-            case "SERVER_DELETE" -> serverDelete(msg);
+        case "SERVER_CREATE":
+            serverCreate(msg);
+            break;
+        case "SERVER_DELETE":
+            serverDelete(msg);
+            break;
         }
     }
 
     private void serverCreate(String[] msg) throws UnknownHostException {
-        manager.addFile(msg[1],msg[2],msg[3]);
+        manager.addFile(msg[1], msg[2], msg[3]);
     }
 
-    private void serverDelete(String[] msg){
+    private void serverDelete(String[] msg) {
         manager.removeFile(msg[1]);
     }
 
     private void list(Socket socket) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        for (String nameFile : manager.getListALLFile()){
+        for (String nameFile : manager.getListALLFile()) {
             stringBuilder.append(nameFile);
             stringBuilder.append('\n');
         }
-        if (!stringBuilder.isEmpty()) {
+        if (!(stringBuilder.length() == 0)) {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         socket.getOutputStream().write(stringBuilder.toString().getBytes());
@@ -132,44 +139,44 @@ public class MultiServer {
     }
 
     private void redirection(String nameFile, Socket socket) throws IOException {
-        String msg = "REDIRECTION" + " " +
-                manager.getServer(nameFile).getAddress() + " " +
-                manager.getServer(nameFile).getPort();
+        String msg = "REDIRECTION" + " " + manager.getServer(nameFile).getAddress() + " "
+                + manager.getServer(nameFile).getPort();
         socket.getOutputStream().write(msg.getBytes());
     }
 
-    private void get(String nameFile, Socket socket) throws IOException{
+    private void get(String nameFile, Socket socket) throws IOException {
         if (manager.isInServer(nameFile)) {
             if (manager.isInFolder(nameFile)) {
                 FileHandle.OperationStatus result = manager.readFile(nameFile, socket);
                 switch (result) {
-                    case ERROR_FILE_DELETED -> socket.getOutputStream().write(
-                            "ERROR: file deleted by another user".getBytes());
-                    case ERROR_FILE_STREAM -> socket.getOutputStream().write(
-                            "ERROR: an error occurred while opening the file".getBytes());
-                    case ERROR_INTERRUPTED -> socket.getOutputStream().write(
-                            "ERROR: you were interrupted during your expectation".getBytes());
-                    case OK -> socket.getOutputStream().write("ok".getBytes(StandardCharsets.UTF_8));
+                case ERROR_FILE_DELETED:
+                    socket.getOutputStream().write("ERROR: file deleted by another user".getBytes());
+                    break;
+                case ERROR_FILE_STREAM:
+                    socket.getOutputStream().write("ERROR: an error occurred while opening the file".getBytes());
+                    break;
+                case ERROR_INTERRUPTED:
+                    socket.getOutputStream().write("ERROR: you were interrupted during your expectation".getBytes());
+                    break;
+                case OK:
+                    socket.getOutputStream().write("ok".getBytes(StandardCharsets.UTF_8));
+                    break;
                 }
                 socket.getOutputStream().flush();
+            } else {
+                redirection(nameFile, socket);
             }
-            else {
-                redirection(nameFile,socket);
-            }
-        }
-        else {
+        } else {
             socket.getOutputStream().write("ERROR: the requested file doesn't exist".getBytes());
         }
     }
 
     private void diffusion(Socket socket, String nameFile, String request) throws IOException {
         String msg;
-        for (Server server : servers){
-            Socket diffusion = new Socket(server.getAddress(),server.getPort());
-            msg = request + " " +
-                    nameFile + " " +
-                    manager.getLocalServer().getAddress()+ " " +
-                    manager.getLocalServer().getPort();
+        for (Server server : servers) {
+            Socket diffusion = new Socket(server.getAddress(), server.getPort());
+            msg = request + " " + nameFile + " " + manager.getLocalServer().getAddress() + " "
+                    + manager.getLocalServer().getPort();
             diffusion.getOutputStream().write(msg.getBytes());
             diffusion.getOutputStream().flush();
             diffusion.getOutputStream().close();
@@ -181,9 +188,8 @@ public class MultiServer {
     }
 
     private void created(String nameFile, Socket socket) throws IOException {
-        if (manager.isInServer(nameFile)){
-            socket.getOutputStream().write(
-                    "ERROR: the requested file exist".getBytes());
+        if (manager.isInServer(nameFile)) {
+            socket.getOutputStream().write("ERROR: the requested file exist".getBytes());
         } else {
             boolean result = manager.createFile(folder, nameFile);
             if (!result) {
@@ -194,44 +200,52 @@ public class MultiServer {
         }
     }
 
-    private void write(String nameFile,Socket socket) throws IOException {
+    private void write(String nameFile, Socket socket) throws IOException {
         if (manager.isInServer(nameFile)) {
             FileHandle.OperationStatus result = manager.writeFile(nameFile, socket);
             switch (result) {
-                case ERROR_FILE_DELETED -> socket.getOutputStream().write(
-                        "ERROR: file deleted by another user".getBytes());
-                case ERROR_FILE_STREAM -> socket.getOutputStream().write(
-                        "ERROR: an error occurred while opening, writing or closing the file".getBytes());
-                case ERROR_INTERRUPTED -> socket.getOutputStream().write(
-                        "ERROR: you were interrupted during your expectation".getBytes());
-                case ERROR_FILE_DOES_NOT_EXIST -> redirection(nameFile, socket);
-                case OK -> socket.getOutputStream().write("ok".getBytes());
+            case ERROR_FILE_DELETED:
+                socket.getOutputStream().write("ERROR: file deleted by another user".getBytes());
+                break;
+            case ERROR_FILE_STREAM:
+                socket.getOutputStream()
+                        .write("ERROR: an error occurred while opening, writing or closing the file".getBytes());
+                break;
+            case ERROR_INTERRUPTED:
+                socket.getOutputStream().write("ERROR: you were interrupted during your expectation".getBytes());
+                break;
+            case ERROR_FILE_DOES_NOT_EXIST:
+                redirection(nameFile, socket);
+                break;
+            case OK:
+                socket.getOutputStream().write("ok".getBytes());
+                break;
             }
-        }
-        else {
+        } else {
             socket.getOutputStream().write("ERROR: the requested file doesn't exist".getBytes());
         }
     }
 
-    private void delete(String nameFile, Socket socket) throws IOException{
+    private void delete(String nameFile, Socket socket) throws IOException {
         if (manager.isInServer(nameFile)) {
             if (manager.isInFolder(nameFile)) {
                 FileHandle.OperationStatus result = manager.deleteFile(nameFile);
                 switch (result) {
-                    case ERROR_INTERRUPTED -> socket.getOutputStream().write(
-                            "ERROR: you were interrupted during your expectation".getBytes());
-                    case ERROR_DELETION -> socket.getOutputStream().write(
-                            "ERROR: an error occurred while deleting the file".getBytes());
-                    case OK -> diffusion(socket, nameFile, "SERVER_DELETE");
+                case ERROR_INTERRUPTED:
+                    socket.getOutputStream().write("ERROR: you were interrupted during your expectation".getBytes());
+                    break;
+                case ERROR_DELETION:
+                    socket.getOutputStream().write("ERROR: an error occurred while deleting the file".getBytes());
+                    break;
+                case OK:
+                    diffusion(socket, nameFile, "SERVER_DELETE");
+                    break;
                 }
-            }
-            else {
+            } else {
                 redirection(nameFile, socket);
             }
-        }
-        else {
-            socket.getOutputStream().write(
-                    "ERROR: the requested file doesn't exist".getBytes());
+        } else {
+            socket.getOutputStream().write("ERROR: the requested file doesn't exist".getBytes());
         }
     }
 }
