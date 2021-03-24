@@ -55,7 +55,9 @@ public class DistantServerFolderManager {
         return serverMap.get(nameFile).equals(localServer);
     }
 
-    public FileHandle.OperationStatus readFile(String nameFile, Socket socket) throws IOException {
+    public FileHandle.OperationStatus readFile(String folder, String nameFile, Socket socket) throws IOException {
+        socket.getOutputStream().write(String.valueOf(new File(folder,nameFile).length()).getBytes());
+        socket.getOutputStream().flush();
         return fileMap.get(nameFile).readFile(new PrintWriter(socket.getOutputStream()));
     }
 

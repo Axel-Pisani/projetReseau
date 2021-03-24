@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +33,9 @@ public class ServerFolderManager {
         return map.containsKey(nameFile);
     }
 
-    public FileHandle.OperationStatus readFile(String nameFile, Socket socket) throws IOException {
+    public FileHandle.OperationStatus readFile(String folder,String nameFile, Socket socket) throws IOException {
+        socket.getOutputStream().write(String.valueOf((new File(folder,nameFile)).length()).getBytes());
+        socket.getOutputStream().flush();
         return map.get(nameFile).readFile(new PrintWriter(socket.getOutputStream()));
     }
 

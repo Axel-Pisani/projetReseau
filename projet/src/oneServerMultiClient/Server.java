@@ -99,7 +99,7 @@ public class Server {
 
     private void get(String nameFile, Socket socket) throws IOException {
         if (manager.isInFolder(nameFile)) {
-            FileHandle.OperationStatus result = manager.readFile(nameFile, socket);
+            FileHandle.OperationStatus result = manager.readFile(folder,nameFile, socket);
             switch (result) {
             case ERROR_FILE_DELETED:
                 socket.getOutputStream().write("ERROR: file deleted by another user".getBytes());

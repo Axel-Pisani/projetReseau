@@ -39,7 +39,7 @@ public class MultiServer {
 
     private void initialization() throws IOException {
         for (String nameFile : manager.getListLocalFile()) {
-            diffusion(null, nameFile, "SERVER_CREATE");
+            diffusion(nameFile, "SERVER_CREATE");
         }
     }
 
@@ -69,6 +69,7 @@ public class MultiServer {
         public void run() {
             byte[] buffer = new byte[2048];
             try {
+                socket.getOutputStream().write("connected".getBytes());
                 int length = in.read(buffer);
                 String[] msg = Translate.translateByteInString(buffer, length).split(" ");
                 msg[0] = msg[0].toUpperCase(Locale.ROOT);
@@ -145,9 +146,10 @@ public class MultiServer {
     }
 
     private void get(String nameFile, Socket socket) throws IOException {
+        socket.getOutputStream().flush();
         if (manager.isInServer(nameFile)) {
             if (manager.isInFolder(nameFile)) {
-                FileHandle.OperationStatus result = manager.readFile(nameFile, socket);
+                FileHandle.OperationStatus result = manager.readFile(folder,nameFile, socket);
                 switch (result) {
                 case ERROR_FILE_DELETED:
                     socket.getOutputStream().write("ERROR: file deleted by another user".getBytes());
@@ -157,9 +159,6 @@ public class MultiServer {
                     break;
                 case ERROR_INTERRUPTED:
                     socket.getOutputStream().write("ERROR: you were interrupted during your expectation".getBytes());
-                    break;
-                case OK:
-                    socket.getOutputStream().write("ok".getBytes(StandardCharsets.UTF_8));
                     break;
                 }
                 socket.getOutputStream().flush();
@@ -171,7 +170,7 @@ public class MultiServer {
         }
     }
 
-    private void diffusion(Socket socket, String nameFile, String request) throws IOException {
+    private void diffusion(String nameFile, String request) throws IOException {
         String msg;
         for (Server server : servers) {
             Socket diffusion = new Socket(server.getAddress(), server.getPort());
@@ -181,9 +180,6 @@ public class MultiServer {
             diffusion.getOutputStream().flush();
             diffusion.getOutputStream().close();
             diffusion.close();
-            if (socket != null) {
-                socket.getOutputStream().write("ok".getBytes());
-            }
         }
     }
 
@@ -195,7 +191,7 @@ public class MultiServer {
             if (!result) {
                 socket.getOutputStream().write("ERROR: cannot create this file".getBytes());
             } else {
-                diffusion(socket, nameFile, "SERVER_CREATE");
+                diffusion(nameFile, "SERVER_CREATE");
             }
         }
     }
@@ -217,9 +213,6 @@ public class MultiServer {
             case ERROR_FILE_DOES_NOT_EXIST:
                 redirection(nameFile, socket);
                 break;
-            case OK:
-                socket.getOutputStream().write("ok".getBytes());
-                break;
             }
         } else {
             socket.getOutputStream().write("ERROR: the requested file doesn't exist".getBytes());
@@ -238,7 +231,7 @@ public class MultiServer {
                     socket.getOutputStream().write("ERROR: an error occurred while deleting the file".getBytes());
                     break;
                 case OK:
-                    diffusion(socket, nameFile, "SERVER_DELETE");
+                    diffusion(nameFile, "SERVER_DELETE");
                     break;
                 }
             } else {

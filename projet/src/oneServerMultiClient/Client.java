@@ -1,5 +1,7 @@
 package oneServerMultiClient;
 
+import multiServerMultiClient.Translate;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -26,15 +28,21 @@ public class Client {
         connect(adr, port);
         if (isConnect()) {
             out.write("get papier".getBytes());
+            length = in.read(buffer);
+            long size = Long.parseLong(Translate.translateByteInString(buffer,length));
             File file = new File(pathname, "papier");
             file.createNewFile();
             PrintWriter writer = new PrintWriter(file);
+            double sum = 0;
+            double progress;
             while ((length = in.read(buffer)) > 0) {
+                sum += length;
+                progress = sum/size * 100.0;
+                System.out.println(progress);
                 writer.write(Translate.translateByteInString(buffer, length));
                 writer.flush();
             }
             closeConnection();
-            System.out.println("get is terminate");
         }
         connect(adr, port);
         if (isConnect()) {
