@@ -14,13 +14,13 @@ public class Client {
     private OutputStream out;
 
     public Client(InetAddress adr, int port, String name) throws IOException {
-        String pathname = "/home/marius/cours/l3s2/ApRéseau/projet/clients/" + name;
+        String pathname = "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients/" + name;
         new File(pathname).mkdir();
         connect(adr,port);
         if (isConnect()) {
             out.write(("list").getBytes());
             length = in.read(buffer);
-            System.out.println();
+            System.out.println("list:\n" + Translate.translateByteInString(buffer,length));
             closeConnection();
         }
         connect(adr, port);
@@ -34,6 +34,7 @@ public class Client {
                 writer.flush();
             }
             closeConnection();
+            System.out.println("get is terminate");
         }
         connect(adr, port);
         if (isConnect()) {
@@ -41,19 +42,19 @@ public class Client {
             out.flush();
             out.write("le papier est pas si fantastic".getBytes());
             closeConnection();
+            System.out.println("write is terminate");
         }
         connect(adr, port);
         if (isConnect()) {
-            length = in.read(buffer);
-            System.out.println(Translate.translateByteInString(buffer, length));
             out.write("delete papier1".getBytes());
             closeConnection();
+            System.out.println("delete is terminate");
         }
         connect(adr, port);
         if (isConnect()) {
-            System.out.println(Translate.translateByteInString(buffer, length));
             out.write("create papier1".getBytes());
             closeConnection();
+            System.out.println("create is terminate");
         }
     }
 
