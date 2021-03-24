@@ -3,14 +3,14 @@ package multiServerMultiClient;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+
 
 public class ClientForMultiServer {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
     private int length;
-    private byte[] buffer;
+    private byte[] buffer = new byte[2048];
 
     public ClientForMultiServer(InetAddress adr, int port, String name) throws IOException {
         String pathname = "/home/marius/cours/l3s2/ApRéseau/projet/clients/" + name;
