@@ -76,7 +76,8 @@ public class ClientForMultiServer {
             socket.getInputStream().close();
             socket.getOutputStream().close();
             socket.close();
-            socket = new Socket(address,port);
+            String[] info = msg.split(" ");
+            socket = new Socket(InetAddress.getByName(info[1]),Integer.parseInt(info[2]));
             socket.getOutputStream().write(request.getBytes(StandardCharsets.UTF_8));
         }
         socket.getInputStream().read(buffer);
