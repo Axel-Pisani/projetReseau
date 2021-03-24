@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 /**
  * Cette classe gère un fichier de façon thread safe. Elle permet à
- * plusieurs thread de lire le fichier en même temps. Si un thread demande une édition du fichier, FileHandle
+ * plusieurs thread de lire le fichier en même temps. Si un thread demande une édition du fichier, oneServerMultiClient.multiServerMultiClient.FileHandle
  * bloquera les demandes suivantes de lecture ou d'écriture, attendra que les lectures courantes sont terminées,
  * puis permettra l'édition. De façon similaire dès qu'un fichier est indiqué "détruit", plus aucune autre action
  * n'est permie.
@@ -48,7 +48,7 @@ public class FileHandle {
     /**
      * Constructeur. Prend en paramètre le chemin vers le fichier. Suppose que le fichier existe, il faut donc le créer
      * auparavant.
-     * @param file Le fichier qui sera pris en charge par l'objet FileHandle
+     * @param file Le fichier qui sera pris en charge par l'objet oneServerMultiClient.multiServerMultiClient.FileHandle
      */
     public FileHandle(File file) {
         this.file = file;
@@ -98,7 +98,7 @@ public class FileHandle {
                     this.wait();
                 }
             } catch (InterruptedException e) {
-                System.err.println("FileHandle Interrupted while waiting...");
+                System.err.println("oneServerMultiClient.multiServerMultiClient.FileHandle Interrupted while waiting...");
                 e.printStackTrace();
                 return OperationStatus.ERROR_INTERRUPTED;
             }
@@ -183,7 +183,7 @@ public class FileHandle {
                     this.wait();
                 }
             } catch (InterruptedException e) {
-                System.err.println("FileHandle Interrupted while waiting...");
+                System.err.println("oneServerMultiClient.multiServerMultiClient.FileHandle Interrupted while waiting...");
                 e.printStackTrace();
                 return OperationStatus.ERROR_INTERRUPTED;
             }
@@ -229,9 +229,9 @@ public class FileHandle {
     }
 
     /**
-     * Cette fonction demande à l'objet FileHandle de supprimer le fichier du disque.
-     * Après cette opération, l'objet FileHandle ne doit plus être utilisé car le fichier correspondant n'existe
-     * plus. Il faudra recréer le fichier et créer un nouveau FileHandle.
+     * Cette fonction demande à l'objet oneServerMultiClient.multiServerMultiClient.FileHandle de supprimer le fichier du disque.
+     * Après cette opération, l'objet oneServerMultiClient.multiServerMultiClient.FileHandle ne doit plus être utilisé car le fichier correspondant n'existe
+     * plus. Il faudra recréer le fichier et créer un nouveau oneServerMultiClient.multiServerMultiClient.FileHandle.
      * @return
      * Cette fonction renvoie le status de son opération, qui peut être :
      * - ERROR_INTERRUPTED : le thread a été interrompu pendant qu'il attendait son tour
@@ -241,7 +241,7 @@ public class FileHandle {
     public OperationStatus delete() {
         synchronized (this) {
             if( state == State.MARKED_FOR_DELETION ) {
-                System.err.println("FileHandle : double delete on file " + file.getName());
+                System.err.println("oneServerMultiClient.multiServerMultiClient.FileHandle : double delete on file " + file.getName());
                 return OperationStatus.OK;
             }
             setState(State.MARKED_FOR_DELETION);
@@ -249,7 +249,7 @@ public class FileHandle {
                 // We wait for the end of edition
                 while(is_writing) this.wait();
             } catch (InterruptedException e) {
-                System.err.println("FileHandle Interrupted while waiting...");
+                System.err.println("oneServerMultiClient.multiServerMultiClient.FileHandle Interrupted while waiting...");
                 e.printStackTrace();
                 return OperationStatus.ERROR_INTERRUPTED;
             }

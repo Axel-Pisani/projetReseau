@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DistantServerFolderManager {
     private final ConcurrentHashMap<String, FileHandle> fileMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String,Server> serverMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Server> serverMap = new ConcurrentHashMap<>();
     private final Server localServer;
 
     public DistantServerFolderManager(String folder, Server server) {
