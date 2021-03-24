@@ -30,12 +30,10 @@ public class ClientForMultiServer {
         File file =  new File(pathname,"papier");
         file.createNewFile();
         PrintWriter writer = new PrintWriter(file);
-        PrintWriter writer1 = new PrintWriter(System.out);
         System.out.println("start while");
         while ((length = in.read(buffer)) > 0){
-            System.out.println(Translate.translateByteInString(buffer,length));
-            writer.println(Translate.translateByteInString(buffer,length));
             writer.write(Translate.translateByteInString(buffer,length));
+            writer.flush();
         }
         System.out.println("end while");
         in.close();
