@@ -4,11 +4,14 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Locale;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket serverSocket;
     private String folder;
     private ServerFolderManager manager;
+    private Executor executor;
 
     Server(String folder, int port) {
         try {
@@ -16,6 +19,7 @@ public class Server {
             serverSocket.setReuseAddress(true);
             this.folder = folder;
             manager = new ServerFolderManager(folder);
+            executor = Executors.newWorkStealingPool();
         } catch (Exception e) {
             System.err.println("impossible d'ouvrir le serveur");
             System.exit(1);
@@ -25,7 +29,7 @@ public class Server {
     public void start() {
         try {
             while (true) {
-                new Thread(new Handler(serverSocket.accept())).start();
+                executor.execute(new Thread(new Handler(serverSocket.accept())));
             }
         } catch (Exception e) {
             System.out.println("Arrêt anormal du serveur.");
@@ -38,11 +42,13 @@ public class Server {
         private final OutputStream out;
         private final InputStream in;
 
+
         Handler(Socket socket) throws IOException {
             this.socket = socket;
             out = socket.getOutputStream();
             in = socket.getInputStream();
         }
+
 
         @Override
         public void run() {

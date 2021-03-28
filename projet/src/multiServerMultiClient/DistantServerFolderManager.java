@@ -39,8 +39,14 @@ public class DistantServerFolderManager {
         return serverMap.get(nameFile);
     }
 
-    public void addFile(String nameFile, String adr, String port) throws UnknownHostException {
-        serverMap.put(nameFile,new Server(InetAddress.getByName(adr),Integer.parseInt(port)));
+    public void addFile(String nameFile, String adr, String port){
+        System.out.println("addFile");
+        try {
+            serverMap.put(nameFile, new Server(InetAddress.getByName(adr.split("/")[0]), Integer.parseInt(port)));
+        }catch (UnknownHostException e){
+            System.err.println("erreur");
+            System.err.println(adr);
+        }
     }
 
     public void removeFile(String nameFile) {

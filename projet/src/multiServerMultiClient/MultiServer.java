@@ -5,31 +5,36 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class MultiServer {
     private ServerSocket serverSocket;
     private String folder;
     private DistantServerFolderManager manager;
     private final ConcurrentLinkedDeque<Server> servers = new ConcurrentLinkedDeque<>();
+    private Executor executor;
 
     MultiServer(String folder, int port, InetAddress address) {
+
         try {
             serverSocket = new ServerSocket(port, -1, address);
             serverSocket.setReuseAddress(true);
             this.folder = folder;
             this.manager = new DistantServerFolderManager(folder, new Server(address, port));
+            executor = Executors.newWorkStealingPool();
             BufferedReader reader = new BufferedReader(
                     new FileReader("/home/marius/cours/l3s2/ApRéseau/projet/multi-severs/servers"));
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] info = line.split(",");
-                if (InetAddress.getByName(info[0]).equals(address) && info[1].equals(String.valueOf(port)))
-                    servers.add(new Server(InetAddress.getByName(info[0]), Integer.parseInt(info[1])));
-                initialization();
+                servers.add(new Server(InetAddress.getByName(info[0]), Integer.parseInt(info[1])));
             }
+            new Scanner(System.in).nextLine();
+            initialization();
 
         } catch (Exception e) {
             System.err.println("impossible d'ouvrir le serveur");
@@ -37,16 +42,53 @@ public class MultiServer {
         }
     }
 
-    private void initialization() throws IOException {
-        for (String nameFile : manager.getListLocalFile()) {
-            diffusion(nameFile, "SERVER_CREATE");
+    public void initialization() throws IOException {
+        for (Server currentServer : servers) {
+            if (currentServer.equals(serverSocket.getInetAddress(), serverSocket.getLocalPort())) {
+                System.out.println("server current");
+                System.out.println(currentServer);
+                for (String nameFile : manager.getListLocalFile()) {
+                    diffusion(nameFile, "SERVER_CREATE");
+                }
+                System.out.println("la");
+                endTransmissionFile();
+            }
+            else{
+                boolean finish = false;
+                System.out.println("non server current");
+                do{
+                    Socket socket = serverSocket.accept();
+                    System.out.println("ici");
+                    byte[] buffer = new byte[2048];
+                    String msg = Translate.translateByteInString(buffer,socket.getInputStream().read(buffer));
+                    System.out.println(msg);
+                    if (msg.equals("FINISH")){
+                        finish = true;
+                    }
+                    else {
+                        modificationRequestDistantFileSet(msg.split(" "));
+                    }
+                }while (!finish);
+                System.out.println("au suivant");
+            }
+        }
+
+    }
+
+    private void endTransmissionFile() throws IOException {
+        for (Server server : servers) {
+            Socket diffusion = new Socket(server.getAddress(), server.getPort());
+            diffusion.getOutputStream().write("FINISH".getBytes());
+            diffusion.getOutputStream().flush();
+            diffusion.getOutputStream().close();
+            diffusion.close();
         }
     }
 
     public void start() {
         try {
             while (true) {
-                new Thread(new Handler(serverSocket.accept())).start();
+                executor.execute(new Thread(new Handler(serverSocket.accept())));
             }
         } catch (Exception e) {
             System.out.println("Arrêt anormal du serveur.");
@@ -119,7 +161,9 @@ public class MultiServer {
     }
 
     private void serverCreate(String[] msg) throws UnknownHostException {
+        System.out.println("serverCreate");
         manager.addFile(msg[1], msg[2], msg[3]);
+        System.out.println("end creation");
     }
 
     private void serverDelete(String[] msg) {
@@ -173,13 +217,17 @@ public class MultiServer {
     private void diffusion(String nameFile, String request) throws IOException {
         String msg;
         for (Server server : servers) {
-            Socket diffusion = new Socket(server.getAddress(), server.getPort());
-            msg = request + " " + nameFile + " " + manager.getLocalServer().getAddress() + " "
-                    + manager.getLocalServer().getPort();
-            diffusion.getOutputStream().write(msg.getBytes());
-            diffusion.getOutputStream().flush();
-            diffusion.getOutputStream().close();
-            diffusion.close();
+            if (!server.equals(serverSocket.getInetAddress(), serverSocket.getLocalPort())) {
+                Socket diffusion = new Socket(server.getAddress(), server.getPort());
+                msg = request + " " + nameFile + " " + manager.getLocalServer().getAddress() + " "
+                        + manager.getLocalServer().getPort();
+                System.out.println(msg);
+                System.out.println(diffusion.getInetAddress() + ":" + diffusion.getPort());
+                diffusion.getOutputStream().write(msg.getBytes());
+                diffusion.getOutputStream().flush();
+                diffusion.getOutputStream().close();
+                diffusion.close();
+            }
         }
     }
 

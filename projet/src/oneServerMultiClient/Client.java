@@ -7,6 +7,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+import java.util.Timer;
+
 
 public class Client {
     private Socket socket;
@@ -15,7 +18,7 @@ public class Client {
     private InputStream in;
     private OutputStream out;
 
-    public Client(InetAddress adr, int port, String name) throws IOException {
+    public Client(InetAddress adr, int port, String name) throws IOException, InterruptedException {
         String pathname = "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients/" + name;
         new File(pathname).mkdir();
         connect(adr,port);
@@ -38,7 +41,7 @@ public class Client {
             while ((length = in.read(buffer)) > 0) {
                 sum += length;
                 progress = sum/size * 100.0;
-                System.out.println(progress);
+                System.out.println(progress + "%");
                 writer.write(Translate.translateByteInString(buffer, length));
                 writer.flush();
             }

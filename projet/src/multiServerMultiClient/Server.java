@@ -21,11 +21,23 @@ public class Server {
     }
 
     @Override
+    public String toString() {
+        return "Server[" +
+                "" + address +
+                ":" + port +
+                ']';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Server server = (Server) o;
         return port == server.port && Objects.equals(address, server.address);
+    }
+
+    public boolean equals(InetAddress adr, int port){
+        return this.port == port && this.address.equals(adr);
     }
 
     @Override
