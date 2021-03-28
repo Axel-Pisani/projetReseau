@@ -13,32 +13,37 @@ public class ClientForMultiServer {
     private byte[] buffer = new byte[2048];
 
     public ClientForMultiServer(InetAddress adr, int port, String name) throws IOException {
-        String pathname = "/home/marius/cours/l3s2/ApRéseau/projet/clients/" + name;
+        String pathname = "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients" + name;
         new File(pathname).mkdir();
         connect(adr, port);
         if (isConnect()) {
             request("list");
-            length = in.read(buffer);
             System.out.println(Translate.translateByteInString(buffer, length));
             closeConnection();
         }
         connect(adr, port);
         if (isConnect()) {
             request("get papier");
+            File file = new File(pathname, "result");
+            boolean alors = file.createNewFile();
             length = in.read(buffer);
-            long size = Long.parseLong(Translate.translateByteInString(buffer,length));
-            File file = new File(pathname, "papier");
-            file.createNewFile();
+            String msg = Translate.translateByteInString(buffer,length);
             PrintWriter writer = new PrintWriter(file);
-            double sum = 0;
-            double progress;
-            while ((length = in.read(buffer)) > 0) {
-                sum += length;
-                progress = sum/size * 100.0;
-                System.out.println(progress);
-                writer.write(Translate.translateByteInString(buffer, length));
-                writer.flush();
+            if (!msg.contains("ok to start the transmission\n")) {
+                while ((length = in.read(buffer)) > 0) {
+                    writer.write(Translate.translateByteInString(buffer, length));
+                    writer.flush();
+                }
             }
+            else {
+                for (String string : Translate.translateByteInString(buffer,length).split("\n")){
+                    if (!string.equals("ok to start the transmission")){
+                        writer.write(string +'\n');
+                        writer.flush();
+                    }
+                }
+            }
+
             closeConnection();
         }
         connect(adr, port);
@@ -51,6 +56,7 @@ public class ClientForMultiServer {
         connect(adr, port);
         if (isConnect()) {
             request("delete papier2");
+            System.out.println(Translate.translateByteInString(buffer,length));
         }
         closeConnection();
         connect(adr, port);
@@ -58,12 +64,18 @@ public class ClientForMultiServer {
             request("create papier1");
         }
         closeConnection();
+        connect(adr, port);
+        if (isConnect()) {
+            request("list");
+            System.out.println(Translate.translateByteInString(buffer, length));
+        }
+        closeConnection();
     }
 
     private void redirection(String request, String target) throws IOException {
         closeConnection();
         String[] info = target.split(" ");
-        connect(InetAddress.getByName(info[1]),Integer.parseInt(info[2]));
+        connect(InetAddress.getByName(info[1].split("/")[0]),Integer.parseInt(info[2]));
         if (isConnect()) {
             socket.getOutputStream().write(request.getBytes());
         }
@@ -71,7 +83,8 @@ public class ClientForMultiServer {
 
     private boolean isConnect() throws IOException {
         length = socket.getInputStream().read(buffer);
-        return Translate.translateByteInString(buffer, length).equals("connection\n");
+        System.out.println(Translate.translateByteInString(buffer, length));
+        return Translate.translateByteInString(buffer, length).equals("connected");
     }
 
     private void connect(InetAddress adr, int port) throws IOException {
@@ -89,7 +102,7 @@ public class ClientForMultiServer {
     private void request(String request) throws IOException {
         socket.getOutputStream().write(request.getBytes());
         socket.getOutputStream().flush();
-        int length = socket.getInputStream().read(buffer);
+        length = socket.getInputStream().read(buffer);
         String target = Translate.translateByteInString(buffer,length);
         if (isRedirection(Translate.translateByteInString(buffer,length))){
             redirection(request,target);

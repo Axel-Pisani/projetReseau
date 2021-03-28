@@ -6,7 +6,7 @@ public class MainClient {
     public static void main(String[] args) {
         int port = 1234;
         try {
-            new ClientForMultiServer(InetAddress.getLocalHost(),port,"jean");
+            new ClientForMultiServer(InetAddress.getByName("localhost"),port,"paul");
             System.exit(0);
         }catch (Exception e){
             System.err.println("erreur impossible d'ouvrir le client");

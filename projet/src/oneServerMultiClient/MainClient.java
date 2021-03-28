@@ -4,7 +4,7 @@ import java.net.InetAddress;
 
 public class MainClient {
     public static void main(String[] args) {
-        int port = 1234;
+        int port = 1264;
         try {
             new Client(InetAddress.getLocalHost(),port,"jean");
             System.exit(0);

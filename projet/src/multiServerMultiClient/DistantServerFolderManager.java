@@ -57,13 +57,11 @@ public class DistantServerFolderManager {
         return fileMap.containsKey(nameFile);
     }
 
-    public boolean isInServer(String nameFile){
-        return serverMap.get(nameFile).equals(localServer);
+    public boolean isInServers(String nameFile){
+        return serverMap.containsKey(nameFile);
     }
 
     public FileHandle.OperationStatus readFile(String folder, String nameFile, Socket socket) throws IOException {
-        socket.getOutputStream().write(String.valueOf(new File(folder,nameFile).length()).getBytes());
-        socket.getOutputStream().flush();
         return fileMap.get(nameFile).readFile(new PrintWriter(socket.getOutputStream()));
     }
 
