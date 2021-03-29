@@ -25,11 +25,11 @@ public class ClientForMultiServer {
         if (isConnect()) {
             request("get papier");
             File file = new File(pathname, "result");
-            boolean alors = file.createNewFile();
+            file.createNewFile();
             length = in.read(buffer);
             String msg = Translate.translateByteInString(buffer,length);
             PrintWriter writer = new PrintWriter(file);
-            if (!msg.contains("ok to start the transmission\n")) {
+            if (msg.equals("ok to start the transmission\n")) {
                 while ((length = in.read(buffer)) > 0) {
                     writer.write(Translate.translateByteInString(buffer, length));
                     writer.flush();
