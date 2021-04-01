@@ -1,5 +1,16 @@
-Client attend 4 argument dans l'odre suivant:
+ClientForMultiServer et Client attendent 2 argument dans l'odre suivant:
     1. le nom du seveur cible
     2. le numero de port cible
-    3. le chemin absolue du dossier ou sera enregistré le fichier télécharger le cas écheant
-    4. le nom du fichier cible(soit
+
+    une fois activer, les client pourront chosir les requête à éxecuter via le numéro qui leur associe dans le menu.
+    attention toute fois, la requête write engendre une fin du client.
+
+oneServerMultiClient.Server attent 2 argument dans l'ordre suivant:
+    1. le chemin absolue du repertoire du serveur
+    2. le numero de port
+
+MultiServer attend 4 argument dans l'ordre suivant :
+    1. l'enplacement du fichier comptenant tous les nom et numero de port de chaque serveur
+    2. le chemin absolue du repertoire du serveur
+    3. le numero de port
+    4. l'adresse du serveur

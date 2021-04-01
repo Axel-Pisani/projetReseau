@@ -94,7 +94,6 @@ public class Client {
 
     private boolean isConnect() throws IOException {
         msg = buffer.readLine();
-        System.out.println(msg);
         return msg.equals("connection");
     }
 
@@ -113,7 +112,6 @@ public class Client {
     private boolean requestIsPossible(String request) throws IOException {
         sendRequest(request);
         readResponse();
-        System.out.println(msg);
         if (msg.toUpperCase(Locale.ROOT).equals("OK")){
             return true;
         }
@@ -135,15 +133,10 @@ public class Client {
 
     private void get(String pathname,String nameFile, String nameFileDst) throws IOException {
         connect(adr,port);
-        System.out.println("ini");
         if (isConnect()) {
-            System.out.println("co");
             if (requestIsPossible("get " + nameFile)) {
-                System.out.println("send");
                 long size = takeFileSize();
-                System.out.println("size" + size);
                 File file = createFileForGet(pathname,nameFileDst);
-                System.out.println("avant boucle");
                 writeFileForGet(file, size);
                 readResponse();
                 closeConnection();
@@ -152,10 +145,8 @@ public class Client {
     }
 
     private File createFileForGet(String pathname, String nameFile) throws IOException {
-        System.out.println("creation du fichier");
         File file = new File(pathname,nameFile);
-        boolean result = file.createNewFile();
-        System.out.println("creation : " + result);
+        file.createNewFile();
         return file;
     }
 
@@ -170,7 +161,6 @@ public class Client {
         System.out.println(sum);
         while (sum != size) {
             msg = buffer.readLine();
-            System.out.println("msg : " + msg);
             sum = calculateReadingProgression(sum,size,msg.length());
             printWriter.println(msg);
             printWriter.flush();
@@ -212,7 +202,6 @@ public class Client {
                 }
                 socket.shutdownOutput();
                 readResponse();
-                System.out.println("ecrie " + msg);
             }
         }
     }
