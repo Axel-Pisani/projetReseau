@@ -24,9 +24,9 @@ public class Client {
         this.adr = adr;
         this.port = port;
         //list();
-        //get(pathname);
+        get(pathname);
         //write();
-        delete();
+        //delete();
         //create();
     }
 
@@ -102,7 +102,8 @@ public class Client {
         PrintWriter printWriter = new PrintWriter(file);
         System.out.println("demare ecriture");
         double sum = 0;
-        while ((msg = buffer.readLine()) != null) {
+        while (sum != size) {
+            msg = buffer.readLine();
             System.out.println("reçut " + msg + " size " + msg.length());
             sum = calculateReadingProgression(sum,size,msg.length());
             printWriter.println(msg);

@@ -4,7 +4,7 @@ import java.net.InetAddress;
 
 public class MainClient {
     public static void main(String[] args) {
-        int port = 1234;
+        int port = 1235;
         try {
             new ClientForMultiServer(InetAddress.getByName("localhost"),port,"paul");
             System.exit(0);

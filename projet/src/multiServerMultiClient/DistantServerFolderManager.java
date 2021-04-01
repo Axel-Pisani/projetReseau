@@ -1,5 +1,6 @@
 package multiServerMultiClient;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,12 +40,12 @@ public class DistantServerFolderManager {
         return serverMap.get(nameFile);
     }
 
-    public void addFile(String nameFile, String adr, String port){
-        System.out.println("addFile");
+    public void addFileForDistantServer(String nameFile, String adr, String port){
+        System.out.println("addFile :" + nameFile);
         try {
             serverMap.put(nameFile, new Server(InetAddress.getByName(adr.split("/")[0]), Integer.parseInt(port)));
         }catch (UnknownHostException e){
-            System.err.println("erreur");
+            System.err.println("ERROR");
             System.err.println(adr);
         }
     }
@@ -53,20 +54,24 @@ public class DistantServerFolderManager {
         serverMap.remove(nameFile);
     }
 
-    public boolean isInFolder(String nameFile){
+    public boolean isInLocalServer(String nameFile){
         return fileMap.containsKey(nameFile);
     }
 
-    public boolean isInServers(String nameFile){
+    public boolean isInFederation(String nameFile){
         return serverMap.containsKey(nameFile);
     }
 
-    public FileHandle.OperationStatus readFile(String folder, String nameFile, Socket socket) throws IOException {
-        return fileMap.get(nameFile).readFile(new PrintWriter(socket.getOutputStream()));
+    public FileHandle.OperationStatus readFile(String folder,String nameFile, PrintWriter out) {
+        long size = new File(folder, nameFile).length() - 1;
+        out.println(size);
+        System.out.println("size " + size);
+        out.flush();
+        return fileMap.get(nameFile).readFile(out);
     }
 
-    public FileHandle.OperationStatus writeFile(String nameFile, Socket socket) throws IOException{
-        return fileMap.get(nameFile).replaceFile(new Scanner(socket.getInputStream()));
+    public FileHandle.OperationStatus writeFile(String nameFile, BufferedReader in) throws IOException{
+        return fileMap.get(nameFile).replaceFile(new Scanner(in));
     }
 
     public boolean createFile(String folder, String nameFile) throws IOException {
@@ -84,7 +89,8 @@ public class DistantServerFolderManager {
     }
 
     public FileHandle.OperationStatus deleteFile(String fileName){
-        return fileMap.get(fileName).delete();
+        FileHandle fileDelete = fileMap.remove(fileName);
+        return fileDelete.delete();
     }
 
     public Set<String> getListLocalFile(){

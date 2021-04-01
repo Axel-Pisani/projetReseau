@@ -162,15 +162,18 @@ public class Server {
         if (manager.isInFolder(nameFile)) {
             FileHandle.OperationStatus result = manager.readFile(folder,nameFile, out);
             switch (result) {
-            case ERROR_FILE_DELETED:
-                sendResponse(out,"ERROR: file deleted by another user");
-                break;
-            case ERROR_FILE_STREAM:
-                sendResponse(out,"ERROR: an error occurred while opening, writing or closing the file");
-                break;
-            case ERROR_INTERRUPTED:
-                sendResponse(out,"ERROR: you were interrupted during your expectation");
-                break;
+                case ERROR_FILE_DELETED:
+                    sendResponse(out, "ERROR: file deleted by another user");
+                    break;
+                case ERROR_FILE_STREAM:
+                    sendResponse(out, "ERROR: an error occurred while opening, writing or closing the file");
+                    break;
+                case ERROR_INTERRUPTED:
+                    sendResponse(out, "ERROR: you were interrupted during your expectation");
+                    break;
+                case OK:
+                    sendValidResponse(out);
+                    break;
             }
         } else {
             sendResponse(out,"ERROR: the requested file doesn't exist");
