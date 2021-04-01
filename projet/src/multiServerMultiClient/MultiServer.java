@@ -1,5 +1,7 @@
 package multiServerMultiClient;
 
+import comuneCode.FileHandle;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -18,8 +20,7 @@ public class MultiServer {
     private final ConcurrentLinkedDeque<Server> servers = new ConcurrentLinkedDeque<>();
     private Executor executor;
 
-    MultiServer(String folder, int port, InetAddress address) {
-
+    MultiServer(String seversFile, String folder, int port, InetAddress address) {
         try {
             serverSocket = new ServerSocket(port, -1, address);
             serverSocket.setReuseAddress(true);
@@ -27,15 +28,15 @@ public class MultiServer {
             this.manager = new DistantServerFolderManager(folder, new Server(address, port));
             executor = Executors.newWorkStealingPool();
             BufferedReader reader = new BufferedReader(
-                    new FileReader("/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/multi-severs/servers.txt"));
+                    new FileReader(seversFile));
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] info = line.split(",");
                 servers.add(new Server(InetAddress.getByName(info[0]), Integer.parseInt(info[1])));
             }
+            System.out.println("make enter");
             new Scanner(System.in).nextLine();
             initialization();
-            System.out.println("end initialization");
 
         } catch (Exception e) {
             System.err.println("ERROR : impossible to open this server");
@@ -55,12 +56,10 @@ public class MultiServer {
             else{
                 boolean finish = false;
                 BufferedReader buffer;
-                System.out.println("rentre en boucle");
                 do{
                     Socket socket = serverSocket.accept();
                     buffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     String msg = buffer.readLine();
-                    System.out.println("message : " + msg);
                     if (msg.equals("OK")){
                         finish = true;
                         socket.close();
@@ -69,7 +68,6 @@ public class MultiServer {
                         modificationRequestDistantFileSet(msg.split(" "));
                     }
                 }while (!finish);
-                System.out.println("other");
             }
         }
 
@@ -126,7 +124,6 @@ public class MultiServer {
 
     private String[] recoversRequest(BufferedReader in) throws IOException {
         String msg = in.readLine();
-        System.out.println("reçut " + msg);
         return extractRequest(msg);
     }
 
@@ -137,12 +134,10 @@ public class MultiServer {
     private String[] extractRequest(String msg){
         String[] info = msg.split(" ");
         info[0] = info[0].toUpperCase(Locale.ROOT);
-        System.out.println("info " + Arrays.toString(info));
         return info;
     }
 
     private void sendResponse(PrintWriter out, String response){
-        System.out.println("reponse " + response);
         out.println(response);
         out.flush();
     }
@@ -156,9 +151,7 @@ public class MultiServer {
     }
 
     private void managedRequest(String[] info, PrintWriter out, BufferedReader in) throws IOException {
-        System.out.println("requet " + Arrays.toString(info));
         if (info.length == 1 && info[0].equals("LIST")) {
-            System.out.println("c'est une liste ");
             sendValidResponse(out);
             list(out);
         } else if (info.length == 2) {
@@ -171,7 +164,6 @@ public class MultiServer {
     }
 
     private void closeConnection(BufferedReader in, PrintWriter out, Socket socket) throws IOException {
-        System.out.println("requet terminer");
         in.close();
         out.close();
         socket.close();
@@ -219,7 +211,6 @@ public class MultiServer {
 
     private void list(PrintWriter out) {
         String msg = makeFileList();
-        System.out.println(msg);
         out.println(msg);
         out.flush();
     }
@@ -238,7 +229,6 @@ public class MultiServer {
 
     private void redirection(String nameFile, PrintWriter out) {
         String msg = createMsgRedirection(nameFile);
-        System.out.println(msg);
         sendResponse(out,msg);
     }
 
@@ -279,7 +269,6 @@ public class MultiServer {
         PrintWriter out;
         for (Server server : servers) {
             if (isDistantServer(server)) {
-                System.out.println("diffusion for " + server.getAddress() + ":" + server.getPort());
                 Socket diffusion = new Socket(server.getAddress(), server.getPort());
                 out = new PrintWriter(diffusion.getOutputStream());
                 msg = createDiffusionRequest(nameFile,request);

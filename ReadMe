@@ -1,0 +1,5 @@
+Client attend 4 argument dans l'odre suivant:
+    1. le nom du seveur cible
+    2. le numero de port cible
+    3. le chemin absolue du dossier ou sera enregistré le fichier télécharger le cas écheant
+    4. le nom du fichier cible(soit

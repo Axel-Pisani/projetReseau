@@ -1,16 +1,23 @@
 package multiServerMultiClient;
 
+import comuneCode.ErrorArgs;
+
 import java.net.InetAddress;
 
 public class MainClient {
     public static void main(String[] args) {
-        int port = 1235;
-        try {
-            new ClientForMultiServer(InetAddress.getByName("localhost"),port,"paul");
-            System.exit(0);
-        }catch (Exception e){
-            System.err.println("erreur impossible d'ouvrir le client");
-            System.exit(1);
+        if (args.length != 4) {
+            ErrorArgs.error();
+        } else {
+            int port;
+            InetAddress adr;
+            try {
+                port = Integer.parseInt(args[1]);
+                adr = InetAddress.getByName(args[0]);
+                new ClientForMultiServer(adr, port);
+            } catch (Exception e) {
+                ErrorArgs.error();
+            }
         }
     }
 }

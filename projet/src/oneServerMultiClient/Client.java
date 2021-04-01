@@ -17,17 +17,78 @@ public class Client {
     private int port;
     private DecimalFormat df = new DecimalFormat("0.00");
 
-
-    public Client(InetAddress adr, int port, String name) throws IOException, InterruptedException {
-        String pathname = "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients/" + name;
-        new File(pathname).mkdir();
+    public Client(InetAddress adr, int port) throws IOException {
         this.adr = adr;
         this.port = port;
-        //list();
-        get(pathname);
-        //write();
-        //delete();
-        //create();
+        manageClientChose();
+    }
+
+
+    private String getMenu(){
+        return "chose request among possibility and enter this number:\n1:list\n2:get\n3:write\n4:delete\n5:create\n6:finish\n";
+    }
+
+    private void manageClientChose() throws IOException {
+        String menu = getMenu();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println(menu);
+        String enter;
+        while (true) {
+            enter = reader.readLine();
+            switch (enter) {
+                case "1":
+                    list();
+                    break;
+                case "2":
+                    get(reader);
+                    break;
+                case "3":
+                    write(reader);
+                    return;
+                case "4":
+                    delete(reader);
+                    break;
+                case "5":
+                    create(reader);
+                    break;
+                case "6":
+                    return;
+                default:
+                    System.err.println("ERROR : the request isn't valid");
+            }
+            System.out.println(menu);
+        }
+    }
+
+    private String getFileName(BufferedReader reader) throws IOException {
+        System.out.println("enter the name of file targeted");
+        return reader.readLine();
+    }
+
+    private void get(BufferedReader reader) throws IOException {
+        System.out.println("enter the pathname for save");
+        String pathname = reader.readLine();
+        new File(pathname).mkdir();
+        System.out.println("enter the name file for save");
+        String localFileName = reader.readLine();
+        String fileName = getFileName(reader);
+        get(pathname,fileName,localFileName);
+    }
+
+    private void write(BufferedReader reader) throws IOException {
+        String fileName = getFileName(reader);
+        write(fileName);
+
+    }
+
+    private void  delete(BufferedReader reader) throws IOException {
+        String fileName = getFileName(reader);
+        delete(fileName);
+    }
+
+    private void create(BufferedReader reader) throws IOException {
+        String fileName = getFileName(reader);
+        create(fileName);
     }
 
 
@@ -52,6 +113,7 @@ public class Client {
     private boolean requestIsPossible(String request) throws IOException {
         sendRequest(request);
         readResponse();
+        System.out.println(msg);
         if (msg.toUpperCase(Locale.ROOT).equals("OK")){
             return true;
         }
@@ -63,54 +125,57 @@ public class Client {
 
     private void sendRequest(String request){
         writer.println(request);
+        System.out.println("request : " + request);
         writer.flush();
     }
 
     private void readResponse() throws IOException {
         msg = buffer.readLine();
-        System.out.println("reponse "+ msg);
     }
 
-    private void get(String pathname) throws IOException {
+    private void get(String pathname,String nameFile, String nameFileDst) throws IOException {
         connect(adr,port);
+        System.out.println("ini");
         if (isConnect()) {
-            if (requestIsPossible("get papier.txt")) {
+            System.out.println("co");
+            if (requestIsPossible("get " + nameFile)) {
+                System.out.println("send");
                 long size = takeFileSize();
-                File file = createFileForGet(pathname);
+                System.out.println("size" + size);
+                File file = createFileForGet(pathname,nameFileDst);
+                System.out.println("avant boucle");
                 writeFileForGet(file, size);
                 readResponse();
-                System.out.println("message de fin " + msg);
                 closeConnection();
             }
         }
     }
 
-    private File createFileForGet(String pathname) throws IOException {
-        File file = new File(pathname, "papier.txt");
-        file.createNewFile();
-        System.out.println("file cree");
+    private File createFileForGet(String pathname, String nameFile) throws IOException {
+        System.out.println("creation du fichier");
+        File file = new File(pathname,nameFile);
+        boolean result = file.createNewFile();
+        System.out.println("creation : " + result);
         return file;
     }
 
     private long takeFileSize() throws IOException {
         msg = buffer.readLine();
-        System.out.println("size " + msg);
         return Long.parseLong(msg);
     }
 
     private void writeFileForGet(File file, long size) throws IOException {
         PrintWriter printWriter = new PrintWriter(file);
-        System.out.println("demare ecriture");
         double sum = 0;
+        System.out.println(sum);
         while (sum != size) {
             msg = buffer.readLine();
-            System.out.println("reçut " + msg + " size " + msg.length());
+            System.out.println("msg : " + msg);
             sum = calculateReadingProgression(sum,size,msg.length());
             printWriter.println(msg);
             printWriter.flush();
         }
-        System.out.println("recut " + msg);
-        System.out.println("fin ecriture");
+
     }
 
     private double calculateReadingProgression(double sum, long size, int add){
@@ -134,10 +199,10 @@ public class Client {
         }
     }
 
-    private void write() throws IOException {
+    private void write(String nameFile) throws IOException {
         connect(adr, port);
         if (isConnect()) {
-            if (requestIsPossible("write papier2.txt")) {
+            if (requestIsPossible("write " + nameFile)) {
                 BufferedReader scanner = new BufferedReader(new InputStreamReader(System.in));
                 String tampon = scanner.readLine();
                 while (tampon != null){
@@ -148,16 +213,14 @@ public class Client {
                 socket.shutdownOutput();
                 readResponse();
                 System.out.println("ecrie " + msg);
-                buffer.close();
-                socket.close();
             }
         }
     }
 
-    private void delete() throws IOException {
+    private void delete(String nameFile) throws IOException {
         connect(adr, port);
         if (isConnect()) {
-            if (requestIsPossible("delete papier1.txt")) {
+            if (requestIsPossible("delete " + nameFile)) {
                 readResponse();
                 System.out.println(msg);
                 closeConnection();
@@ -165,10 +228,10 @@ public class Client {
         }
     }
 
-    private void create() throws IOException {
+    private void create(String nameFile) throws IOException {
         connect(adr, port);
         if (isConnect()) {
-            if (requestIsPossible("create papier1.txt")) {
+            if (requestIsPossible("create " + nameFile)) {
                 readResponse();
                 System.out.println(msg);
                 closeConnection();

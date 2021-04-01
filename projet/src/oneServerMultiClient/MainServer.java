@@ -1,9 +1,25 @@
 package oneServerMultiClient;
 
+import comuneCode.ErrorArgs;
+
+
 public class MainServer {
     public static void main(String[] args) {
-        int port = 1264;
-        Server server = new Server("/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/server",port);
-        server.start();
+        if (args.length != 2){
+            ErrorArgs.error();
+        }
+        else {
+            int port;
+            try {
+                port = Integer.parseInt(args[1]);
+                String folder = args[0];
+                Server server =
+                        new Server(folder, port);
+                server.start();
+            }catch (Exception e){
+                ErrorArgs.error();
+            }
+
+        }
     }
 }

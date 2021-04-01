@@ -1,11 +1,12 @@
 package multiServerMultiClient;
 
+import comuneCode.FileHandle;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class DistantServerFolderManager {
         return serverMap.containsKey(nameFile);
     }
 
-    public FileHandle.OperationStatus readFile(String folder,String nameFile, PrintWriter out) {
+    public FileHandle.OperationStatus readFile(String folder, String nameFile, PrintWriter out) {
         long size = new File(folder, nameFile).length() - 1;
         out.println(size);
         System.out.println("size " + size);
