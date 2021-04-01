@@ -1,8 +1,6 @@
 package oneServerMultiClient;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
@@ -33,14 +31,16 @@ public class ServerFolderManager {
         return map.containsKey(nameFile);
     }
 
-    public FileHandle.OperationStatus readFile(String folder,String nameFile, Socket socket) throws IOException {
-        socket.getOutputStream().write(String.valueOf((new File(folder,nameFile)).length()).getBytes());
-        socket.getOutputStream().flush();
-        return map.get(nameFile).readFile(new PrintWriter(socket.getOutputStream()));
+    public FileHandle.OperationStatus readFile(String folder,String nameFile, PrintWriter out) throws IOException {
+        long size = new File(folder, nameFile).length() - 1;
+        out.println(size);
+        System.out.println("size " + size);
+        out.flush();
+        return map.get(nameFile).readFile(out);
     }
 
-    public FileHandle.OperationStatus writeFile(String nameFile, Socket socket) throws IOException{
-        return map.get(nameFile).replaceFile(new Scanner(socket.getInputStream()));
+    public FileHandle.OperationStatus writeFile(String nameFile, BufferedReader in) throws IOException{
+        return map.get(nameFile).replaceFile(new Scanner(in));
     }
 
     public boolean createFile(String folder, String nameFile) throws IOException {
@@ -54,7 +54,8 @@ public class ServerFolderManager {
     }
 
     public FileHandle.OperationStatus deleteFile(String fileName){
-        return map.get(fileName).delete();
+        FileHandle fileDelete = map.remove(fileName);
+        return fileDelete.delete();
     }
 
     public Set<String> getListFile(){

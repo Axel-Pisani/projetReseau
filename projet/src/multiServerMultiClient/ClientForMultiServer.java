@@ -23,7 +23,7 @@ public class ClientForMultiServer {
         }
         connect(adr, port);
         if (isConnect()) {
-            request("get papier");
+            request("get papier.txt");
             File file = new File(pathname, "result");
             file.createNewFile();
             length = in.read(buffer);
@@ -48,8 +48,8 @@ public class ClientForMultiServer {
         }
         connect(adr, port);
         if (isConnect()){
-            request("write papier");
-            out.write("le papier est pas si fantastic".getBytes());
+            request("write papier.txt");
+            out.write("le papier.txt est pas si fantastic".getBytes());
 
         }
         closeConnection();
