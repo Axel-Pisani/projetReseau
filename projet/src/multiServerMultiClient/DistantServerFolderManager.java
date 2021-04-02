@@ -64,7 +64,7 @@ public class DistantServerFolderManager {
     }
 
     public FileHandle.OperationStatus readFile(String folder, String nameFile, PrintWriter out) {
-        long size = new File(folder, nameFile).length() - 1;
+        long size = new File(folder, nameFile).length();
         out.println(size);
         System.out.println("size " + size);
         out.flush();

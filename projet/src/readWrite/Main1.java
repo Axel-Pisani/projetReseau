@@ -8,7 +8,7 @@ public class Main1 {
     public static void main(String[] args) {
         int port = 1234;
         try {
-            new ClientRead(InetAddress.getLocalHost(), port,
+            new ClientRead(InetAddress.getByName("localhost"), port,
                     "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients/jean",
                     "readWrite.txt");
             System.exit(0);

@@ -108,8 +108,11 @@ public class ClientRead {
     private void writeFileForGet(File file, long size) throws IOException {
         PrintWriter printWriter = new PrintWriter(file);
         double sum = 0;
-        while ( sum != size) {
+        System.out.println(size);
+        while ( sum < size) {
             msg = buffer.readLine();
+            System.out.println(msg);
+            System.out.println(sum);
             sum = calculateReadingProgression(sum,size,msg.length());
             printWriter.println(msg);
             printWriter.flush();
@@ -117,7 +120,10 @@ public class ClientRead {
     }
 
     private double calculateReadingProgression(double sum, long size, int add){
-        sum += add;
+        sum += add + 1;
+        if (sum > size){
+            sum -= 1;
+        }
         System.out.println(df.format(sum / size * 100.0) + "%");
         return sum;
     }

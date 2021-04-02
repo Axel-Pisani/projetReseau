@@ -6,7 +6,7 @@ public class Main2 {
     public static void main(String[] args) {
         int port = 1234;
         try {
-            new ClientRead(InetAddress.getLocalHost(), port,
+            new ClientRead(InetAddress.getByName("localhost"), port,
                     "/home/marius/cours/l3s2/ApRéseau/projetReseau/projet/clients/paul",
                     "read2.txt");
             System.exit(0);

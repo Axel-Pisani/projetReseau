@@ -181,7 +181,10 @@ public class ClientForMultiServer {
     }
 
     private double calculateReadingProgression(double sum, long size, int add){
-        sum += add;
+        sum += add + 1;
+        if (sum > size){
+            sum -= 1;
+        }
         System.out.println(df.format(sum / size * 100.0) + "%");
         return sum;
     }
