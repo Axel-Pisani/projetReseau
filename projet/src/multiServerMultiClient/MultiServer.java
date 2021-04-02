@@ -20,7 +20,7 @@ public class MultiServer {
     private final ConcurrentLinkedDeque<Server> servers = new ConcurrentLinkedDeque<>();
     private Executor executor;
 
-    MultiServer(String seversFile, String folder, int port, InetAddress address) {
+    public MultiServer(String seversFile, String folder, int port, InetAddress address) {
         try {
             serverSocket = new ServerSocket(port, -1, address);
             serverSocket.setReuseAddress(true);
